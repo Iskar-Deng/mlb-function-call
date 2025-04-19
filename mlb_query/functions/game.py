@@ -1,32 +1,39 @@
 import requests
-from datetime import datetime
 
 def get_game_result(team_name, date):
-    """查询指定球队某天的比赛结果"""
-    formatted_date = datetime.strptime(date, "%Y-%m-%d").strftime("%m/%d/%Y")
-    url = f"https://statsapi.mlb.com/api/v1/schedule?sportId=1&date={formatted_date}"
+    """查询指定球队某天比赛结果"""
+    url = f"https://statsapi.mlb.com/api/v1/schedule?sportId=1&date={date}"
     response = requests.get(url)
+
     if response.status_code != 200:
-        return {"error": "查询比赛结果失败"}
+        return {"error": "Failed to fetch schedule info"}
 
-    dates = response.json().get("dates", [])
-    if not dates:
-        return {"error": "该日期无比赛数据"}
+    data = response.json()
+    games = data.get("dates", [{}])[0].get("games", [])
+    if not games:
+        return {"error": "No games found for that date"}
 
-    games = dates[0].get("games", [])
+    # 查找对应球队的比赛
     for game in games:
-        teams = game["teams"]
-        home_team = teams["home"]["team"]["name"]
-        away_team = teams["away"]["team"]["name"]
+        teams = game.get("teams", {})
+        home = teams.get("home", {}).get("team", {}).get("name", "")
+        away = teams.get("away", {}).get("team", {}).get("name", "")
 
-        if team_name.lower() in [home_team.lower(), away_team.lower()]:
+        if team_name in [home, away]:
+            # 比赛状态
+            status = game.get("status", {}).get("detailedState", "Unknown")
+
+            # 可能没有score信息（比如比赛未开始）
+            home_score = teams.get("home", {}).get("score")
+            away_score = teams.get("away", {}).get("score")
+
             return {
                 "date": date,
-                "home_team": home_team,
-                "away_team": away_team,
-                "home_score": teams["home"]["score"],
-                "away_score": teams["away"]["score"],
-                "status": game["status"]["detailedState"]
+                "home_team": home,
+                "away_team": away,
+                "home_score": home_score if home_score is not None else "N/A",
+                "away_score": away_score if away_score is not None else "N/A",
+                "status": status
             }
 
-    return {"error": "未找到相关比赛"}
+    return {"error": "No matching game for the specified team"}

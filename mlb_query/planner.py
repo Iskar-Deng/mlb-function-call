@@ -1,5 +1,6 @@
 import os
 from openai import OpenAI
+from datetime import datetime  # <-- 新增导入
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -16,8 +17,13 @@ def plan_steps(user_input):
     """
     粗粒度规划，返回步骤列表（每步带depends_on_last标记）
     """
+
+    today = datetime.now().strftime("%Y-%m-%d")  # <-- 获取今天日期
+
     prompt = f"""
 你是一个MLB智能助手的任务规划器。
+
+当前日期是：{today}
 
 你的任务是基于以下已支持的功能，制定一个合理的查询步骤列表。
 
@@ -27,12 +33,12 @@ def plan_steps(user_input):
 - 不能生成JSON或列表，只是纯文本！
 - 如果无法利用已有功能完成，请输出："该功能暂未实现" false
 - 不能使用自己的常识，一切信息必须来源于查询
-- 默认查询2025年赛季
+- 默认查询当前赛季
 
 功能列表：
 {FUNCTION_CATALOG}
 
-示例（请严格模仿这个格式）：
+示例（严格模仿格式）：
 查询Mookie Betts的基本资料 false
 确认Mookie Betts效力过Red Sox和Dodgers的年份 true
 针对Red Sox期间的每个赛季，查询Mookie Betts的打击数据 true
