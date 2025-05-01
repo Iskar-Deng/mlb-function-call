@@ -1,32 +1,52 @@
-import requests
+import statsapi
 
 def get_player_info(player_name):
     """查询MLB球员基本资料"""
-    url = f"https://statsapi.mlb.com/api/v1/people/search?names={player_name}"
-    response = requests.get(url)
-    if response.status_code != 200:
-        return {"error": "查询球员资料失败"}
-
-    data = response.json().get("people", [])
-    if not data:
+    players = statsapi.lookup_player(player_name)
+    if not players:
         return {"error": "未找到球员信息"}
-
-    return data[0]
+    
+    player = players[0]
+    return player
 
 def get_player_season_stats(player_name, season):
     """查询MLB球员某赛季打击数据"""
-    player_info = get_player_info(player_name)
-    if "id" not in player_info:
-        return {"error": "未找到球员ID"}
-
-    player_id = player_info["id"]
-    url = f"https://statsapi.mlb.com/api/v1/people/{player_id}/stats?stats=season&season={season}"
-    response = requests.get(url)
-    if response.status_code != 200:
-        return {"error": "查询球员赛季数据失败"}
-
-    stats = response.json().get("stats", [])
-    if not stats or not stats[0].get("splits"):
+    players = statsapi.lookup_player(player_name)
+    if not players:
+        return {"error": "未找到球员信息"}
+    
+    player_id = players[0]['id']
+    stats = statsapi.player_stat_data(player_id, group='hitting', type='season', season=season)
+    
+    if not stats or 'stats' not in stats:
         return {"error": "暂无该赛季数据"}
+    
+    return stats['stats']
 
-    return stats[0]["splits"][0]["stat"]
+def get_player_career_stats(player_name):
+    """查询MLB球员整个生涯的打击数据"""
+    players = statsapi.lookup_player(player_name)
+    if not players:
+        return {"error": "未找到球员信息"}
+    
+    player_id = players[0]['id']
+    stats = statsapi.player_stat_data(player_id, group='hitting', type='career')
+    
+    if not stats or 'stats' not in stats:
+        return {"error": "暂无生涯打击数据"}
+    
+    return stats['stats']
+
+def get_player_career_pitching_stats(player_name):
+    """查询MLB球员整个生涯的投球数据"""
+    players = statsapi.lookup_player(player_name)
+    if not players:
+        return {"error": "未找到球员信息"}
+    
+    player_id = players[0]['id']
+    stats = statsapi.player_stat_data(player_id, group='pitching', type='career')
+    
+    if not stats or 'stats' not in stats:
+        return {"error": "暂无生涯投球数据"}
+    
+    return stats['stats']

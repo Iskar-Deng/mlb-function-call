@@ -1,24 +1,33 @@
-from dotenv import load_dotenv
-load_dotenv()
-
+# app.py
 import os
 import json
 from collections import deque
+from dotenv import load_dotenv
 from openai import OpenAI
 from mlb_query.function_schema import function_schema
 from mlb_query.dispatcher import execute_function
 from mlb_query.planner import plan_steps
 from utils.selector import select_relevant_info
 from utils.formatter import format_response_with_llm
+from datetime import datetime
 
+# ⭐ 读取.env文件
+load_dotenv()
+
+# ⭐ 全局debug buffer
+_debug_buffer = []
+
+# 初始化OpenAI客户端
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
+today = datetime.now().strftime("%Y-%m-%d") 
 def refine_query(history_results, next_step_instruction):
     """
-    带着之前所有历史结果，结合下一步动作描述，生成具体可执行的小query（可能多条）
+    带着历史结果 + 下一步计划，细化出具体小query（可能多条）
     """
     prompt = f"""
 你是一个MLB智能助手的小query补全器。
+
+当前日期是：{today}
 
 历史查询结果（按顺序累积）：
 {json.dumps(history_results, ensure_ascii=False, indent=2)}
@@ -44,45 +53,50 @@ def refine_query(history_results, next_step_instruction):
     print("\n[DEBUG] 动态细化小query：")
     print(refined)
 
+    _debug_buffer.append(f"[细化小query]\n{refined}")
+
     refined_queries = [line.strip() for line in refined.splitlines() if line.strip()]
     return refined_queries
 
 def run_conversation(user_input):
-    print("\n[DEBUG] 用户输入：", user_input)
+    global _debug_buffer
+    _debug_buffer = []  # 每次运行前清空
 
-    # Step 1: 调用planner生成粗粒度步骤
+    _debug_buffer.append(f"用户输入：{user_input}")
+
+    # Step 1: 调用planner生成初步计划
     plan = plan_steps(user_input)
     if not plan:
+        _debug_buffer.append("无法规划有效的查询步骤")
         return "很抱歉，无法规划有效的查询步骤。"
 
     task_queue = deque(plan)
     all_selected_data = []
-    history_results = []  # ⭐⭐ 改成累积历史结果
+    history_results = []
 
-    # Step 2: 依次处理每一个小query
+    # Step 2: 依次处理每个小query
     while task_queue:
         current_task = task_queue.popleft()
         mini_query = current_task["query"]
         depends_on_last = current_task["depends_on_last"]
 
-        print(f"\n[DEBUG] 当前处理小query: {mini_query} (depends_on_last={depends_on_last})")
+        _debug_buffer.append(f"当前处理小query: {mini_query} (depends_on_last={depends_on_last})")
 
         if depends_on_last:
             refined_queries = refine_query(history_results, mini_query)
 
             if len(refined_queries) > 1:
-                # 多个细化小query，全部压入队列头部
                 for q in reversed(refined_queries):
                     task_queue.appendleft({"query": q, "depends_on_last": False})
                 continue
             elif refined_queries[0].startswith("该信息不可用"):
-                print("[DEBUG] 上一步缺信息，无法继续执行")
+                _debug_buffer.append(f"无法继续处理: {mini_query}")
                 all_selected_data.append({"info": f"无法继续处理: {mini_query}"})
                 continue
             else:
                 mini_query = refined_queries[0]
 
-        print(f"[DEBUG] 最终执行小query: {mini_query}")
+        _debug_buffer.append(f"最终执行小query: {mini_query}")
 
         response = client.chat.completions.create(
             model="gpt-4o",
@@ -97,25 +111,29 @@ def run_conversation(user_input):
             function_name = message.function_call.name
             arguments = json.loads(message.function_call.arguments)
 
-            print(f"[DEBUG] 调用function: {function_name}, 参数: {arguments}")
+            _debug_buffer.append(f"调用function: {function_name}, 参数: {arguments}")
 
             raw_data = execute_function(function_name, arguments)
-            print("[DEBUG] 查询原始结果:", raw_data)
+            _debug_buffer.append(f"查询原始结果: {raw_data}")
 
             selected_data = select_relevant_info(mini_query, raw_data)
-            print("[DEBUG] 筛选后的数据:", selected_data)
+            _debug_buffer.append(f"筛选后的数据: {selected_data}")
 
             all_selected_data.append(selected_data)
-            history_results.append(selected_data)  # ⭐⭐ 记录到历史里
-
+            history_results.append(selected_data)
         else:
-            print("[DEBUG] 无法function_call，记录文本")
+            _debug_buffer.append(f"未能执行小query: {mini_query}")
             all_selected_data.append({"info": f"未能执行小query: {mini_query}"})
 
     # Step 3: 用formatter组织最终回答
     final_response = format_response_with_llm(user_input, all_selected_data)
-
     return final_response
+
+def get_debug_log():
+    """
+    提供完整思考过程
+    """
+    return "\n".join(_debug_buffer)
 
 if __name__ == "__main__":
     user_input = input("请输入你的问题：")

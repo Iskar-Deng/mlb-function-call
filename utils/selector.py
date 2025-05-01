@@ -2,14 +2,12 @@ from openai import OpenAI
 import os
 import json
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
 def select_relevant_info(mini_query, raw_data):
     """
     根据小query和查询返回的raw_data，提取最相关的关键信息。
     使用大模型进行信息筛选。
     """
-
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # 初始化放到函数里面
     prompt = f"""
 你是一个数据筛选助手，任务是根据查询意图，从API原始数据中筛选出有用的信息。
 

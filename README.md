@@ -53,8 +53,6 @@ mlb-function-call/
 | functions/player.py | 访问MLB API查询球员资料 |
 | functions/team.py | 查询球队基本信息 |
 | functions/game.py | 查询比赛结果等 |
-| selector.py | 筛选和用户提问最相关的信息字段 |
-| formatter.py | 整理成自然流畅的回答文本 |
 
 ---
 
@@ -128,6 +126,30 @@ python app.py
 
 ---
 
-## 📬 联系与反馈
-
-欢迎提出建议与改进想法！
+## ⏰ 待办事项
+Functions that return formatted text
+✅ statsapi.boxscore - generate a formatted boxscore for a given game
+statsapi.game_highlights - generate a formatted list of highlights with video links for a given game
+statsapi.game_pace - generate a formatted list of pace of game information for a given season (back to 1999)
+statsapi.game_scoring_plays - generate a formatted list of scoring plays for a given game
+statsapi.last_game - get the game id for the given team's most recent game
+statsapi.league_leaders - generate a formatted list of stat leaders for current or specified season
+statsapi.linescore - generate a formatted linescore for a given game
+statsapi.next_game - get the game id for the given team's next game
+statsapi.player_stats - generate a formatted list of a player's career or season stats
+statsapi.roster - generate a formatted list of players on a team's roster
+statsapi.standings - generate a formatted list of standings for a given league/date
+statsapi.team_leaders - generate a formatted list of a team's leaders for a given stat
+Functions that return data in a Python dictionary
+statsapi.boxscore_data - generate a dict containing boxscore data for a given game
+statsapi.game_highlight_data - returns a python list of highlight data, including video links, for a given game
+statsapi.game_pace_data - returns a python dict of pace of game information for a given season (back to 1999)
+statsapi.game_scoring_play_data - returns a python dict of scoring play data for a given game
+statsapi.latest_season - returns python dict containing seasonId and dates for the latest season
+statsapi.league_leader_data - returns python list of stat leader data for current or specified season
+statsapi.lookup_player - get a list of player data based on first, last, or full name, jersey number, current team Id, position, etc.
+statsapi.lookup_team - get a list of teams' info based on the team name, city, abbreviation, or file code
+statsapi.player_stat_data - returns a python dict of a player's career or season stats, along with some biographical information
+statsapi.schedule - retrieve a list of games on a given date/range and/or team/opponent
+statsapi.standings_data - returns a python list of standings data for a given league/date
+statsapi.team_leader_data - returns a python list of a team's leader data for a given stat

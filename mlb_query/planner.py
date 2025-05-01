@@ -2,8 +2,6 @@ import os
 from openai import OpenAI
 from datetime import datetime  # <-- 新增导入
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
 FUNCTION_CATALOG = """
 你可以使用以下功能（只能基于这些功能规划小query，不要创造新功能）：
 
@@ -11,9 +9,15 @@ FUNCTION_CATALOG = """
 2. get_player_season_stats：查询球员某个赛季的打击数据，需要参数：player_name，season
 3. get_team_info：查询球队基本信息，需要参数：team_name（球队英文全称）
 4. get_game_result：查询某支球队在某天的比赛结果，需要参数：team_name，date
+5. get_player_career_stats：查询球员生涯总体打击数据，需要参数：player_name（球员英文全名）
+6. get_player_career_pitching_stats：查询球员生涯投球数据，需要参数：player_name（球员英文全名）
+7. get_team_roster：查询指定球队某个赛季的球员名单，需要参数：team_name，season
+8. get_game_box_score：查询球队某天的比赛box score，需要参数：team_name，date
+9. get_game_highlights：查询指定比赛的高光视频，需要参数：game_pk（比赛 ID）
 """
 
 def plan_steps(user_input):
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # 初始化放到函数里面
     """
     粗粒度规划，返回步骤列表（每步带depends_on_last标记）
     """

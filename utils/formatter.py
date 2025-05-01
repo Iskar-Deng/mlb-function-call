@@ -2,14 +2,12 @@ from openai import OpenAI
 import os
 import json
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
 def format_response_with_llm(user_input, selected_data_list):
     """
     根据用户原始问题以及各个小查询的筛选结果，
     生成自然、流畅且用户友好的最终回答。
     """
-
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # 初始化放到函数里面
     prompt = f"""
 你是一个专业的MLB数据分析助手。
 
