@@ -1,7 +1,7 @@
 from .functions.player import get_player_info, get_player_season_stats, get_player_career_stats, get_player_career_pitching_stats
 from .functions.team import get_team_info, get_team_roster
-from .functions.game import get_game_result, get_game_highlights
-from .functions.box import get_game_box_score
+from .functions.game import get_game_box_score, get_game_highlights
+from .functions.schedule import get_team_game_on_date, get_team_games_in_range
 
 def execute_function(function_name, arguments):
     """
@@ -32,7 +32,13 @@ def execute_function(function_name, arguments):
         return get_game_box_score(arguments["team_name"], arguments["date"])
 
     elif function_name == "get_game_highlights":
-        return get_game_highlights(args["game_pk"])
+        return get_game_highlights(arguments["game_pk"])
+    
+    elif function_name == "get_team_game_on_date":
+        return get_team_game_on_date(arguments["team_name"], arguments["date"])
+    
+    elif function_name == "get_team_games_in_range":
+        return get_team_games_in_range(arguments["team_name"], arguments["start_date"], arguments["end_date"])
 
     else:
         return {"error": f"未识别的function: {function_name}"}

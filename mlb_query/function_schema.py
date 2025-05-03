@@ -131,5 +131,30 @@ function_schema = [
             },
             "required": ["game_pk"]
         }
+    },
+        {
+        "name": "get_team_game_on_date",
+        "description": "查询某一天某球队的比赛",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "team_name": {"type": "string"},
+                "date": {"type": "string"}
+            },
+            "required": ["team_name", "date"]
+        }
+    },
+    {
+        "name": "get_team_games_in_range",
+        "description": "查询某时间段某球队的比赛",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "team_name": {"type": "string"},
+                "start_date": {"type": "string"},
+                "end_date": {"type": "string"}
+            },
+            "required": ["team_name", "start_date", "end_date"]
+        }
     }
 ]

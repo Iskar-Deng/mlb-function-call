@@ -5,15 +5,17 @@ from datetime import datetime  # <-- 新增导入
 FUNCTION_CATALOG = """
 你可以使用以下功能（只能基于这些功能规划小query，不要创造新功能）：
 
-1. get_player_info：查询球员基本资料，需要参数：player_name（球员英文全名）
-2. get_player_season_stats：查询球员某个赛季的打击数据，需要参数：player_name，season
-3. get_team_info：查询球队基本信息，需要参数：team_name（球队英文全称）
-4. get_game_result：查询某支球队在某天的比赛结果，需要参数：team_name，date
-5. get_player_career_stats：查询球员生涯总体打击数据，需要参数：player_name（球员英文全名）
-6. get_player_career_pitching_stats：查询球员生涯投球数据，需要参数：player_name（球员英文全名）
-7. get_team_roster：查询指定球队某个赛季的球员名单，需要参数：team_name，season
-8. get_game_box_score：查询球队某天的比赛box score，需要参数：team_name，date
-9. get_game_highlights：查询指定比赛的高光视频，需要参数：game_pk（比赛 ID）
+get_player_info：查询球员基本资料，需要参数：player_name（球员英文全名）
+get_team_info：查询球队基本信息，需要参数：team_name（球队英文全称）
+get_team_roster：查询指定球队某个赛季的球员名单，需要参数：team_name，season
+get_player_career_stats：查询球员生涯总体打击数据，需要参数：player_name（球员英文全名）
+get_player_career_pitching_stats：查询球员生涯投球数据，需要参数：player_name（球员英文全名）
+get_player_season_stats：查询球员某个赛季的打击数据，需要参数：player_name，season
+get_team_game_on_date：查询某一天某球队的比赛，返回比赛信息（包含比赛id），需要参数：team_name，date
+get_team_games_in_range：查询某时间段某球队的比赛，返回比赛信息列表，需要参数：team_name，start_date，end_date
+get_game_box_score：查询球队某天的比赛box score，需要参数：team_name，date
+get_game_highlights：查询指定比赛的高光视频，需要参数：game_pk（比赛id）
+
 """
 
 def plan_steps(user_input):

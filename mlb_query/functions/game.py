@@ -1,31 +1,46 @@
 import statsapi
 
-def get_game_result(team_name, date):
-    """查询指定球队某天比赛结果"""
-    games = statsapi.schedule(start_date=date, end_date=date)
-    if not games:
-        return {"error": "当天没有比赛"}
+def get_game_box_score(team_name, date):
+    """
+    用 statsapi 查询指定日期某支球队的 Box Score（完整格式化版）
+    """
+    # 查当天所有比赛
+    schedule = statsapi.schedule(date=date, sportId=1)
+    if not schedule:
+        return {"error": f"{date} 没有找到比赛"}
 
-    for game in games:
-        home = game['home_name']
-        away = game['away_name']
+    # 找到 gamePk
+    game_pk = None
+    for game in schedule:
+        home = game['home_name'].strip().lower()
+        away = game['away_name'].strip().lower()
+        if team_name.strip().lower() in [home, away]:
+            game_pk = game['game_id']
+            break
 
-        if team_name.lower() in [home.lower(), away.lower()]:
-            status = game.get('status', 'Unknown')
-            home_score = game.get('home_score', 'N/A')
-            away_score = game.get('away_score', 'N/A')
+    if not game_pk:
+        return {"error": f"没有找到 {team_name} 在 {date} 的比赛"}
 
-            return {
-                "date": date,
-                "home_team": home,
-                "away_team": away,
-                "home_score": home_score,
-                "away_score": away_score,
-                "status": status
-            }
+    # 调用 statsapi.boxscore 拿到格式化文本
+    try:
+        boxscore = statsapi.boxscore(
+            game_pk,
+            battingBox=True,
+            battingInfo=True,
+            fieldingInfo=True,
+            pitchingBox=True,
+            gameInfo=True
+        )
+    except Exception as e:
+        return {"error": f"获取 boxscore 失败: {str(e)}"}
 
-    return {"error": "未找到该队的比赛"}
-
+    # 返回格式化好的文本（前端可以直接展示，也可以进一步处理）
+    return {
+        "date": date,
+        "team": team_name,
+        "boxscore_text": boxscore
+    }
+    
 def get_game_highlights(game_pk):
     """
     获取给定 gamePk 的高光视频链接
