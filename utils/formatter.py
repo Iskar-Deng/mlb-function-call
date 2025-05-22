@@ -23,7 +23,7 @@ def format_response_with_llm(user_input, selected_data_list):
 - 回答简洁明了，清晰易读。
 - 若数据不完整或未能完全满足用户需求，礼貌地指出。
 
-直接给出自然语言回答即可，不需要额外解释。
+请附上相关数据，用自然语言回答。
 """
 
     response = client.chat.completions.create(
