@@ -91,7 +91,6 @@ python app.py
 
 - Relies on MLB public API ([https://github.com/toddrob99/MLB-StatsAPI/wiki/All-Functions](#))
 - Designed to work with OpenAI `gpt-4o`
-- For research and educational use only
 
 ---
 
