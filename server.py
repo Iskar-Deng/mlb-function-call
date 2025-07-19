@@ -8,7 +8,7 @@ def home():
     if request.method == "POST":
         user_input = request.form.get("user_input")
         if not user_input:
-            return "请输入内容", 400
+            return "Please enter the input", 400
 
         final_response = run_conversation(user_input)
         return render_template("index.html", result=final_response)

@@ -4,26 +4,27 @@ import json
 
 def format_response_with_llm(user_input, selected_data_list):
     """
-    根据用户原始问题以及各个小查询的筛选结果，
-    生成自然、流畅且用户友好的最终回答。
+    Generates a final natural language answer based on the user's original question
+    and the selected data from subqueries.
     """
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # 初始化放到函数里面
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    
     prompt = f"""
-你是一个专业的MLB数据分析助手。
+You are a professional MLB data assistant.
 
-用户的问题是：
+The user's question is:
 {user_input}
 
-以下是根据用户问题查询到的相关信息：
+The following is the information retrieved from various subqueries:
 {json.dumps(selected_data_list, ensure_ascii=False, indent=2)}
 
-请你根据这些信息，生成一段清晰、完整、自然语言的回答：
+Please generate a clear, concise, and natural-language answer based on the information above.
 
-要求：
-- 回答简洁明了，清晰易读。
-- 若数据不完整或未能完全满足用户需求，礼貌地指出。
+Requirements:
+- Keep the answer simple and easy to read
+- If data is incomplete or partially missing, politely point it out
 
-直接给出自然语言回答即可，不需要额外解释。
+Only output the final answer in natural language, no additional explanations.
 """
 
     response = client.chat.completions.create(
@@ -34,5 +35,4 @@ def format_response_with_llm(user_input, selected_data_list):
     )
 
     final_reply = response.choices[0].message.content.strip()
-
     return final_reply

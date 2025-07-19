@@ -1,59 +1,59 @@
 import os
 from openai import OpenAI
-from datetime import datetime  # <-- 新增导入
+from datetime import datetime
 
 FUNCTION_CATALOG = """
-你可以使用以下功能（只能基于这些功能规划小query，不要创造新功能）：
+You may use the following functions (you must not create new ones):
 
-get_player_info：查询球员基本资料，需要参数：player_name（球员英文全名）
-get_team_info：查询球队基本信息，需要参数：team_name（球队英文全称）
-get_team_roster：查询指定球队某个赛季的球员名单，需要参数：team_name，season
-get_player_career_stats：查询球员生涯总体打击数据，需要参数：player_name（球员英文全名）
-get_player_career_pitching_stats：查询球员生涯投球数据，需要参数：player_name（球员英文全名）
-get_player_season_stats：查询球员某个赛季的打击数据，需要参数：player_name，season
-get_team_game_on_date：查询某一天某球队的比赛，返回比赛信息（包含比赛id），需要参数：team_name，date
-get_team_games_in_range：查询某时间段某球队的比赛，返回比赛信息列表，需要参数：team_name，start_date，end_date
-get_game_box_score：查询球队某天的比赛box score，需要参数：team_name，date
-get_game_highlights：查询指定比赛的高光视频，需要参数：game_pk（比赛id）
-
+get_player_info: Query basic player information. Required parameter: player_name (full name in English)
+get_team_info: Query basic team information. Required parameter: team_name (full name in English)
+get_team_roster: Query a team's player list for a given season. Required parameters: team_name, season
+get_player_career_stats: Query a player's career batting stats. Required parameter: player_name
+get_player_career_pitching_stats: Query a player's career pitching stats. Required parameter: player_name
+get_player_season_stats: Query a player's batting stats for a specific season. Required parameters: player_name, season
+get_team_game_on_date: Query a team's game on a specific date. Required parameters: team_name, date
+get_team_games_in_range: Query a team's games within a given date range. Required parameters: team_name, start_date, end_date
+get_game_box_score: Query the box score for a team's game on a specific date. Required parameters: team_name, date
 """
 
 def plan_steps(user_input):
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # 初始化放到函数里面
     """
-    粗粒度规划，返回步骤列表（每步带depends_on_last标记）
+    Plan a high-level step list based on the user's question.
+    Each step includes whether it depends on the previous step.
+    Returns: list of {"query": ..., "depends_on_last": bool}
     """
-
-    today = datetime.now().strftime("%Y-%m-%d")  # <-- 获取今天日期
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    today = datetime.now().strftime("%Y-%m-%d")
 
     prompt = f"""
-你是一个MLB智能助手的任务规划器。
+You are the planning module of an MLB assistant.
 
-当前日期是：{today}
+Today's date is: {today}
 
-你的任务是基于以下已支持的功能，制定一个合理的查询步骤列表。
+Your task is to generate a sequence of query steps based on the user's question,
+using only the supported functions below.
 
-要求：
-- 每行写一个小query + 一个true/false，表示这步是否依赖上一步查询的结果
-- 格式严格为：自然语言描述 [空格] true/false
-- 不能生成JSON或列表，只是纯文本！
-- 如果无法利用已有功能完成，请输出："该功能暂未实现" false
-- 不能使用自己的常识，一切信息必须来源于查询
-- 默认查询当前赛季
+Instructions:
+- Each line must contain a natural language subquery followed by a space and then 'true' or 'false'
+- Format strictly: subquery description [space] true/false
+- Do not output lists or JSON
+- If the functionality is not supported, write: "false"
+- Do not use world knowledge — rely only on available queries
+- Default to current season if not specified
 
-功能列表：
+Supported functions:
 {FUNCTION_CATALOG}
 
-示例（严格模仿格式）：
-查询Mookie Betts的基本资料 false
-确认Mookie Betts效力过Red Sox和Dodgers的年份 true
-针对Red Sox期间的每个赛季，查询Mookie Betts的打击数据 true
-针对Dodgers期间的每个赛季，查询Mookie Betts的打击数据 true
+Example (follow format strictly):
+Query basic info about Mookie Betts false
+Find the years Mookie Betts played for Red Sox and Dodgers true
+For each Red Sox season, get Mookie Betts's batting stats true
+For each Dodgers season, get Mookie Betts's batting stats true
 
-用户问题：
+User question:
 "{user_input}"
 
-请输出规划好的步骤，每行一句。
+Output the planned steps, one per line.
 """
 
     response = client.chat.completions.create(
@@ -63,7 +63,7 @@ def plan_steps(user_input):
 
     plan_text = response.choices[0].message.content.strip()
 
-    print("\n[DEBUG] planner粗粒度步骤列表:")
+    print("\n[DEBUG] Planned step list:")
     print(plan_text)
 
     steps = []
@@ -79,7 +79,7 @@ def plan_steps(user_input):
                 "depends_on_last": depends_on_last
             })
         except Exception as e:
-            print("[ERROR] 解析planner输出失败:", e)
+            print("[ERROR] Failed to parse planner output:", e)
             return None
 
     return steps

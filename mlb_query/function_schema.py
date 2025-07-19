@@ -1,45 +1,27 @@
 function_schema = [
     {
         "name": "get_player_info",
-        "description": "查询MLB球员的基本资料",
+        "description": "Query basic profile of an MLB player.",
         "parameters": {
             "type": "object",
             "properties": {
                 "player_name": {
                     "type": "string",
-                    "description": "球员英文全名，例如 Shohei Ohtani"
+                    "description": "Full name of the player in English. Example: 'Shohei Ohtani'"
                 }
             },
             "required": ["player_name"]
         }
     },
     {
-        "name": "get_player_season_stats",
-        "description": "查询MLB球员在指定赛季的打击数据",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "player_name": {
-                    "type": "string",
-                    "description": "球员英文全名，例如 Shohei Ohtani"
-                },
-                "season": {
-                    "type": "integer",
-                    "description": "赛季年份，例如 2024"
-                }
-            },
-            "required": ["player_name", "season"]
-        }
-    },
-    {
         "name": "get_team_info",
-        "description": "查询MLB球队基本信息",
+        "description": "Query basic information of an MLB team.",
         "parameters": {
             "type": "object",
             "properties": {
                 "team_name": {
                     "type": "string",
-                    "description": "球队英文全称，例如 Baltimore Orioles"
+                    "description": "Full English name of the team. Example: 'Baltimore Orioles'"
                 }
             },
             "required": ["team_name"]
@@ -47,63 +29,35 @@ function_schema = [
     },
     {
         "name": "get_game_result",
-        "description": "查询指定MLB球队某天的比赛结果",
+        "description": "Get the result of a specific game for a team on a given date.",
         "parameters": {
             "type": "object",
             "properties": {
                 "team_name": {
                     "type": "string",
-                    "description": "球队英文全称，例如 Seattle Mariners"
+                    "description": "Full English name of the team. Example: 'Seattle Mariners'"
                 },
                 "date": {
                     "type": "string",
-                    "description": "比赛日期，格式YYYY-MM-DD，例如 2025-04-18"
+                    "description": "Date of the game in YYYY-MM-DD format. Example: '2025-04-18'"
                 }
             },
             "required": ["team_name", "date"]
         }
     },
     {
-        "name": "get_player_career_stats",
-        "description": "查询球员生涯的打击统计数据。",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "player_name": {
-                    "type": "string",
-                    "description": "球员的英文全名，例如 'Mookie Betts'"
-                }
-            },
-            "required": ["player_name"]
-        }
-    },
-    {
-        "name": "get_player_career_pitching_stats",
-        "description": "查询球员生涯投球数据",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "player_name": {
-                    "type": "string",
-                    "description": "球员的英文全名，如 'Clayton Kershaw'"
-                }
-            },
-            "required": ["player_name"]
-        }
-    },
-    {
         "name": "get_team_roster",
-        "description": "查询指定球队某个赛季的球员名单",
+        "description": "Retrieve the player roster of a team for a specific season.",
         "parameters": {
             "type": "object",
             "properties": {
                 "team_name": {
                     "type": "string",
-                    "description": "球队英文全称，例如 Boston Red Sox"
+                    "description": "Full team name. Example: 'Boston Red Sox'"
                 },
                 "season": {
                     "type": "integer",
-                    "description": "赛季年份，例如2025"
+                    "description": "Year of the season. Example: 2025"
                 }
             },
             "required": ["team_name", "season"]
@@ -111,50 +65,122 @@ function_schema = [
     },
     {
         "name": "get_game_box_score",
-        "description": "查询某支球队在某天的比赛box score",
+        "description": "Get the formatted box score for a specific game.",
         "parameters": {
             "type": "object",
             "properties": {
-                "team_name": {"type": "string", "description": "球队英文全称"},
-                "date": {"type": "string", "description": "比赛日期，格式YYYY-MM-DD"}
-            },
-            "required": ["team_name", "date"]
-        }
-    },
-        {
-        "name": "get_game_highlights",
-        "description": "获取指定比赛的高光视频链接",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "game_pk": {"type": "integer"}
-            },
-            "required": ["game_pk"]
-        }
-    },
-        {
-        "name": "get_team_game_on_date",
-        "description": "查询某一天某球队的比赛",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "team_name": {"type": "string"},
-                "date": {"type": "string"}
+                "team_name": {
+                    "type": "string",
+                    "description": "Full name of the team"
+                },
+                "date": {
+                    "type": "string",
+                    "description": "Game date in YYYY-MM-DD format"
+                }
             },
             "required": ["team_name", "date"]
         }
     },
     {
-        "name": "get_team_games_in_range",
-        "description": "查询某时间段某球队的比赛",
+        "name": "get_player_stats",
+        "description": "Query a player's season or career stats.",
         "parameters": {
             "type": "object",
             "properties": {
-                "team_name": {"type": "string"},
-                "start_date": {"type": "string"},
-                "end_date": {"type": "string"}
+                "player_name": {
+                    "type": "string",
+                    "description": "Full name of the player. Example: 'Shohei Ohtani'"
+                },
+                "stat_type": {
+                    "type": "string",
+                    "enum": ["season", "career"],
+                    "description": "Stat type: 'season' or 'career'"
+                },
+                "group": {
+                    "type": "string",
+                    "enum": ["hitting", "pitching", "fielding"],
+                    "description": "Stat group: hitting / pitching / fielding"
+                },
+                "season": {
+                    "type": "integer",
+                    "description": "Season year. Required when stat_type is 'season'"
+                }
             },
-            "required": ["team_name", "start_date", "end_date"]
+            "required": ["player_name", "stat_type", "group"]
+        }
+    },
+    {
+        "name": "get_team_leaders",
+        "description": "Get top players in a statistical category for a team.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "team_name": {
+                    "type": "string",
+                    "description": "Team name"
+                },
+                "category": {
+                    "type": "string",
+                    "description": "Stat category (e.g., 'homeRuns', 'walks')"
+                },
+                "season": {
+                    "type": "integer",
+                    "description": "Season year (e.g., 2025)"
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "Number of top players to return (default 10)"
+                }
+            },
+            "required": ["team_name", "category", "season"]
+        }
+    },
+    {
+        "name": "get_league_leaders",
+        "description": "Get top players in the league for a specific category.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string",
+                    "description": "Stat category (e.g., 'onBasePlusSlugging', 'homeRuns')"
+                },
+                "season": {
+                    "type": "integer",
+                    "description": "Season year (e.g., 2025)"
+                },
+                "stat_group": {
+                    "type": "string",
+                    "description": "Stat group: hitting / pitching / fielding"
+                },
+                "league_id": {
+                    "type": "integer",
+                    "description": "League ID (103 = AL, 104 = NL) — optional"
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "Number of top players to return (default 10)"
+                }
+            },
+            "required": ["category", "season", "stat_group"]
+        }
+    },
+    {
+        "name": "get_team_standings",
+        "description": "Query standings for a league on a specific date.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "league_id": {
+                    "type": "integer",
+                    "description": "League ID (103 = AL, 104 = NL)"
+                },
+                "date": {
+                    "type": "string",
+                    "description": "Date in MM/DD/YYYY format (e.g., '05/21/2025')"
+                }
+            },
+            "required": ["league_id", "date"]
         }
     }
 ]

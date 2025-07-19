@@ -1,25 +1,19 @@
 import statsapi
+from .tools import get_player_id, lookup_team_id
 
 def get_team_info(team_name):
-    """查询MLB球队基本信息"""
+    """Query basic information about an MLB team."""
     teams = statsapi.lookup_team(team_name)
-    if not teams:
-        return {"error": "未找到球队信息"}
-    
-    team = teams[0]
-    return team
+    return teams[0] if teams else {"error": f"Team not found: {team_name}"}
 
 def get_team_roster(team_name, season):
-    """查询指定球队某个赛季的球员名单"""
-    teams = statsapi.lookup_team(team_name)
-    if not teams:
-        return {"error": "未找到球队信息"}
+    """Query the structured player roster of a team for a specific MLB season."""
+    team_id = lookup_team_id(team_name)
+    if not team_id:
+        return {"error": f"Team not found: {team_name}"}
     
-    team_id = teams[0]['id']
-    
-    roster_list = statsapi.roster(team_id, season=season)
-    if not roster_list:
-        return {"error": "未找到该赛季名单"}
+    roster = statsapi.roster(team_id, season=season)
+    if not roster:
+        return {"error": f"No roster found for {team_name} in season {season}"}
 
-    # 格式化输出
-    return roster_list
+    return roster
